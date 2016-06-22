@@ -20,8 +20,7 @@ class AtividadeReporter extends Reporter
 
 	// the properties in this class must match the columns returned by GetCustomQuery().
 	// 'CustomFieldExample' is an example that is not part of the `atividade` table
-	public $CustomFieldExample;
-
+	public $nome_projeto;
 	public $Id;
 	public $Projeto;
 	public $Descricao;
@@ -41,7 +40,7 @@ class AtividadeReporter extends Reporter
 	static function GetCustomQuery($criteria)
 	{
 		$sql = "select
-			'custom value here...' as CustomFieldExample
+			`projeto`.`nome` as nome_projeto
 			,`atividade`.`id` as Id
 			,`atividade`.`projeto` as Projeto
 			,`atividade`.`descricao` as Descricao
@@ -49,7 +48,9 @@ class AtividadeReporter extends Reporter
 			,`atividade`.`data_entrega` as DataEntrega
 			,`atividade`.`obs` as Obs
 			,`atividade`.`status` as Status
-		from `atividade`";
+		from `atividade`
+		INNER JOIN projeto ON projeto.id=atividade.projeto
+		";
 
 		// the criteria can be used or you can write your own custom logic.
 		// be sure to escape any user input with $criteria->Escape()

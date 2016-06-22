@@ -55,8 +55,8 @@ class AtividadeMap implements IDaoMap, IDaoMap2
 			self::$FM["Projeto"] = new FieldMap("Projeto","atividade","projeto",false,FM_TYPE_INT,11,null,false,true);
 			self::$FM["Descricao"] = new FieldMap("Descricao","atividade","descricao",false,FM_TYPE_TEXT,null,null,false,true);
 			self::$FM["DataInicio"] = new FieldMap("DataInicio","atividade","data_inicio",false,FM_TYPE_DATE,null,null,false,true);
-			self::$FM["DataEntrega"] = new FieldMap("DataEntrega","atividade","data_entrega",false,FM_TYPE_DATE,null,null,false,true);
-			self::$FM["Obs"] = new FieldMap("Obs","atividade","obs",false,FM_TYPE_TEXT,null,null,false,true);
+			self::$FM["DataEntrega"] = new FieldMap("DataEntrega","atividade","data_entrega",false,FM_TYPE_DATE,null,null,false,false);
+			self::$FM["Obs"] = new FieldMap("Obs","atividade","obs",false,FM_TYPE_TEXT,null,null,false,false);
 			self::$FM["Status"] = new FieldMap("Status","atividade","status",false,FM_TYPE_ENUM,array("Aguardando","Iniciada","Pendente","Concluida","Atrasada"),null,false,true);
 		}
 		return self::$FM;

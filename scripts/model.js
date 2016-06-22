@@ -28,138 +28,137 @@ model.reloadCollectionOnModelUpdate = true;
  * to the server. 
  */
 model.AbstractCollection = Backbone.Collection.extend({
-	totalResults: 0,
-	totalPages: 0,
-	currentPage: 0,
-	pageSize: 0,
-	orderBy: '',
-	orderDesc: false,
-	lastResponseText: null,
-	lastRequestParams: null,
-	collectionHasChanged: true,
-	
-	/**
-	 * fetch the collection from the server using the same options and 
-	 * parameters as the previous fetch
-	 */
-	refetch: function() {
-		this.fetch({ data: this.lastRequestParams })
-	},
-	
-	/* uncomment to debug fetch event triggers
-	fetch: function(options) {
-            this.constructor.__super__.fetch.apply(this, arguments);
-	},
-	// */
-	
-	/**
-	 * client-side sorting baesd on the orderBy and orderDesc parameters that
-	 * were used to fetch the data from the server.  Backbone ignores the
-	 * order of records coming from the server so we have to sort them ourselves
-	 */
-	comparator: function(a,b) {
-		
-		var result = 0;
-		var options = this.lastRequestParams;
-		
-		if (options && options.orderBy) {
-			
-			// lcase the first letter of the property name
-			var propName = options.orderBy.charAt(0).toLowerCase() + options.orderBy.slice(1);
-			var aVal = a.get(propName);
-			var bVal = b.get(propName);
-			
-			if (isNaN(aVal) || isNaN(bVal)) {
-				// treat comparison as case-insensitive strings
-				aVal = aVal ? aVal.toLowerCase() : '';
-				bVal = bVal ? bVal.toLowerCase() : '';
-			} else {
-				// treat comparision as a number
-				aVal = Number(aVal);
-				bVal = Number(bVal);
-			}
-			
-			if (aVal < bVal) {
-				result = options.orderDesc ? 1 : -1;
-			} else if (aVal > bVal) {
-				result = options.orderDesc ? -1 : 1;
-			}
-		}
-		
-		return result;
+    totalResults: 0,
+    totalPages: 0,
+    currentPage: 0,
+    pageSize: 0,
+    orderBy: '',
+    orderDesc: false,
+    lastResponseText: null,
+    lastRequestParams: null,
+    collectionHasChanged: true,
+    /**
+     * fetch the collection from the server using the same options and 
+     * parameters as the previous fetch
+     */
+    refetch: function () {
+        this.fetch({data: this.lastRequestParams})
+    },
+    /* uncomment to debug fetch event triggers
+     fetch: function(options) {
+     this.constructor.__super__.fetch.apply(this, arguments);
+     },
+     // */
 
-	},
-	/**
-	 * override parse to track changes and handle pagination
-	 * if the server call has returned page data
-	 */
-	parse: function(response, options) {
+    /**
+     * client-side sorting baesd on the orderBy and orderDesc parameters that
+     * were used to fetch the data from the server.  Backbone ignores the
+     * order of records coming from the server so we have to sort them ourselves
+     */
+    comparator: function (a, b) {
 
-		// the response is already decoded into object form, but it's easier to
-		// compary the stringified version.  some earlier versions of backbone did
-		// not include the raw response so there is some legacy support here
-		var responseText = options && options.xhr ? options.xhr.responseText : JSON.stringify(response);
-		this.collectionHasChanged = (this.lastResponseText != responseText);
-		this.lastRequestParams = options ? options.data : undefined;
-		
-		// if the collection has changed then we need to force a re-sort because backbone will
-		// only resort the data if a property in the model has changed
-		if (this.lastResponseText && this.collectionHasChanged) this.sort({ silent:true });
-		
-		this.lastResponseText = responseText;
-		
-		var rows;
+        var result = 0;
+        var options = this.lastRequestParams;
 
-		if (response.currentPage) {
-			rows = response.rows;
-			this.totalResults = response.totalResults;
-			this.totalPages = response.totalPages;
-			this.currentPage = response.currentPage;
-			this.pageSize = response.pageSize;
-			this.orderBy = response.orderBy;
-			this.orderDesc = response.orderDesc;
-		} else {
-			rows = response;
-			this.totalResults = rows.length;
-			this.totalPages = 1;
-			this.currentPage = 1;
-			this.pageSize = this.totalResults;
-			this.orderBy = response.orderBy;
-			this.orderDesc = response.orderDesc;
-		}
+        if (options && options.orderBy) {
 
-		return rows;
-	}
+            // lcase the first letter of the property name
+            var propName = options.orderBy.charAt(0).toLowerCase() + options.orderBy.slice(1);
+            var aVal = a.get(propName);
+            var bVal = b.get(propName);
+
+            if (isNaN(aVal) || isNaN(bVal)) {
+                // treat comparison as case-insensitive strings
+                aVal = aVal ? aVal.toLowerCase() : '';
+                bVal = bVal ? bVal.toLowerCase() : '';
+            } else {
+                // treat comparision as a number
+                aVal = Number(aVal);
+                bVal = Number(bVal);
+            }
+
+            if (aVal < bVal) {
+                result = options.orderDesc ? 1 : -1;
+            } else if (aVal > bVal) {
+                result = options.orderDesc ? -1 : 1;
+            }
+        }
+
+        return result;
+
+    },
+    /**
+     * override parse to track changes and handle pagination
+     * if the server call has returned page data
+     */
+    parse: function (response, options) {
+
+        // the response is already decoded into object form, but it's easier to
+        // compary the stringified version.  some earlier versions of backbone did
+        // not include the raw response so there is some legacy support here
+        var responseText = options && options.xhr ? options.xhr.responseText : JSON.stringify(response);
+        this.collectionHasChanged = (this.lastResponseText != responseText);
+        this.lastRequestParams = options ? options.data : undefined;
+
+        // if the collection has changed then we need to force a re-sort because backbone will
+        // only resort the data if a property in the model has changed
+        if (this.lastResponseText && this.collectionHasChanged)
+            this.sort({silent: true});
+
+        this.lastResponseText = responseText;
+
+        var rows;
+
+        if (response.currentPage) {
+            rows = response.rows;
+            this.totalResults = response.totalResults;
+            this.totalPages = response.totalPages;
+            this.currentPage = response.currentPage;
+            this.pageSize = response.pageSize;
+            this.orderBy = response.orderBy;
+            this.orderDesc = response.orderDesc;
+        } else {
+            rows = response;
+            this.totalResults = rows.length;
+            this.totalPages = 1;
+            this.currentPage = 1;
+            this.pageSize = this.totalResults;
+            this.orderBy = response.orderBy;
+            this.orderDesc = response.orderDesc;
+        }
+
+        return rows;
+    }
 });
 
 /**
  * Role Backbone Model
  */
 model.RoleModel = Backbone.Model.extend({
-	urlRoot: 'api/role',
-	idAttribute: 'id',
-	id: '',
-	name: '',
-	canAdmin: '',
-	canEdit: '',
-	canWrite: '',
-	canRead: '',
-	defaults: {
-		'id': null,
-		'name': '',
-		'canAdmin': '',
-		'canEdit': '',
-		'canWrite': '',
-		'canRead': ''
-	}
+    urlRoot: 'api/role',
+    idAttribute: 'id',
+    id: '',
+    name: '',
+    canAdmin: '',
+    canEdit: '',
+    canWrite: '',
+    canRead: '',
+    defaults: {
+        'id': null,
+        'name': '',
+        'canAdmin': '',
+        'canEdit': '',
+        'canWrite': '',
+        'canRead': ''
+    }
 });
 
 /**
  * Role Backbone Collection
  */
 model.RoleCollection = model.AbstractCollection.extend({
-	url: 'api/roles',
-	model: model.RoleModel
+    url: 'api/roles',
+    model: model.RoleModel
 });
 
 
@@ -167,129 +166,137 @@ model.RoleCollection = model.AbstractCollection.extend({
  * User Backbone Model
  */
 model.UserModel = Backbone.Model.extend({
-	urlRoot: 'api/user',
-	idAttribute: 'id',
-	id: '',
-	roleId: '',
-	username: '',
-	password: '',
-	firstName: '',
-	lastName: '',
-	defaults: {
-		'id': null,
-		'roleId': '',
-		'username': '',
-		'password': '',
-		'firstName': '',
-		'lastName': ''
-	}
+    urlRoot: 'api/user',
+    idAttribute: 'id',
+    id: '',
+    roleId: '',
+    username: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    defaults: {
+        'id': null,
+        'roleId': '',
+        'username': '',
+        'password': '',
+        'firstName': '',
+        'lastName': ''
+    }
 });
 
 /**
  * User Backbone Collection
  */
 model.UserCollection = model.AbstractCollection.extend({
-	url: 'api/users',
-	model: model.UserModel
+    url: 'api/users',
+    model: model.UserModel
 });
 
 /**
  * Atividade Backbone Model
  */
 model.AtividadeModel = Backbone.Model.extend({
-	urlRoot: 'api/atividade',
-	idAttribute: 'id',
-	id: '',
-	projeto: '',
-	descricao: '',
-	dataInicio: '',
-	dataEntrega: '',
-	obs: '',
-	status: '',
-	defaults: {
-		'id': null,
-		'projeto': '',
-		'descricao': '',
-		'dataInicio': new Date(),
-		'dataEntrega': new Date(),
-		'obs': '',
-		'status': ''
-	}
+    urlRoot: 'api/atividade',
+    idAttribute: 'id',
+    id: '',
+    projeto: '',
+    nome_projeto: '',
+    descricao: '',
+    dataInicio: '',
+    dataEntrega: '',
+    obs: '',
+    status: '',
+    defaults: {
+        'id': null,
+        'projeto': '',
+        'descricao': '',
+        'dataInicio': new Date(),
+        'dataEntrega': '',
+        'obs': '',
+        'status': ''
+    }
 });
 
 /**
  * Atividade Backbone Collection
  */
 model.AtividadeCollection = model.AbstractCollection.extend({
-	url: 'api/atividades',
-	model: model.AtividadeModel
+    url: 'api/atividades',
+    model: model.AtividadeModel
 });
 
 /**
  * Cliente Backbone Model
  */
 model.ClienteModel = Backbone.Model.extend({
-	urlRoot: 'api/cliente',
-	idAttribute: 'id',
-	id: '',
-	nome: '',
-	empresa: '',
-	email: '',
-	fone: '',
-	obs: '',
-	dataCadastro: '',
-	defaults: {
-		'id': null,
-		'nome': '',
-		'empresa': '',
-		'email': '',
-		'fone': '',
-		'obs': '',
-		'dataCadastro': new Date()
-	}
+    urlRoot: 'api/cliente',
+    idAttribute: 'id',
+    id: '',
+    nome: '',
+    empresa: '',
+    email: '',
+    fone: '',
+    obs: '',
+    dataCadastro: '',
+    defaults: {
+        'id': null,
+        'nome': '',
+        'empresa': '',
+        'email': '',
+        'fone': '',
+        'obs': '',
+        'dataCadastro': new Date()
+    }
 });
 
 /**
  * Cliente Backbone Collection
  */
 model.ClienteCollection = model.AbstractCollection.extend({
-	url: 'api/clientes',
-	model: model.ClienteModel
+    url: 'api/clientes',
+    model: model.ClienteModel
 });
 
 /**
  * Projeto Backbone Model
  */
 model.ProjetoModel = Backbone.Model.extend({
-	urlRoot: 'api/projeto',
-	idAttribute: 'id',
-	id: '',
-	nome: '',
-	cliente: '',
-	dataInicio: '',
-	dataEntrega: '',
-	valor: '',
-	obs: '',
-	prioridade: '',
-	status: '',
-	defaults: {
-		'id': null,
-		'nome': '',
-		'cliente': '',
-		'dataInicio': new Date(),
-		'dataEntrega': new Date(),
-		'valor': '',
-		'obs': '',
-		'prioridade': '',
-		'status': ''
-	}
+    urlRoot: 'api/projeto',
+    idAttribute: 'id',
+    id: '',
+    nome: '',
+    cliente: '',
+    nome_cliente: '',
+    a_aguardando: '',
+    a_iniciada: '',
+    a_pendente: '',
+    a_concluida: '',
+    a_atrasada: '',
+    a_total: '',
+    dataInicio: '',
+    dataEntrega: '',
+    valor: '',
+    obs: '',
+    prioridade: '',
+    status: '',
+    defaults: {
+        'id': null,
+        'nome': '',
+        'cliente': '',
+        'dataInicio': new Date(),
+        'dataEntrega': new Date(),
+        'valor': '',
+        'obs': '',
+        'prioridade': '',
+        'status': ''
+    }
 });
 
 /**
  * Projeto Backbone Collection
  */
 model.ProjetoCollection = model.AbstractCollection.extend({
-	url: 'api/projetos',
-	model: model.ProjetoModel
+    url: 'api/projetos',
+    model: model.ProjetoModel
 });
 

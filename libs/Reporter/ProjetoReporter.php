@@ -20,8 +20,14 @@ class ProjetoReporter extends Reporter
 
 	// the properties in this class must match the columns returned by GetCustomQuery().
 	// 'CustomFieldExample' is an example that is not part of the `projeto` table
-	public $CustomFieldExample;
-
+	public $nome_cliente;
+        public $a_aguardando;
+        public $a_iniciada;
+        public $a_pendente;
+        public $a_concluida;
+        public $a_atrasada;
+        public $a_total;
+        public $a_perc;
 	public $Id;
 	public $Nome;
 	public $Cliente;
@@ -43,7 +49,13 @@ class ProjetoReporter extends Reporter
 	static function GetCustomQuery($criteria)
 	{
 		$sql = "select
-			'custom value here...' as CustomFieldExample
+			`cliente`.`nome` as nome_cliente
+                        ,(SELECT COUNT(*) FROM atividade WHERE atividade.projeto = projeto.Id AND status='Aguardando') AS a_aguardando
+                        ,(SELECT COUNT(*) FROM atividade WHERE atividade.projeto = projeto.Id AND status='Iniciada') AS a_iniciada
+                        ,(SELECT COUNT(*) FROM atividade WHERE atividade.projeto = projeto.Id AND status='Pendente') AS a_pendente
+                        ,(SELECT COUNT(*) FROM atividade WHERE atividade.projeto = projeto.Id AND status='Concluida') AS a_concluida
+                        ,(SELECT COUNT(*) FROM atividade WHERE atividade.projeto = projeto.Id AND status='Atrasada') AS a_atrasada
+                        ,((100*(SELECT COUNT(*) FROM atividade WHERE atividade.projeto = projeto.Id AND status='Concluida'))/(SELECT COUNT(*) FROM atividade WHERE atividade.projeto = projeto.Id)) as a_perc
 			,`projeto`.`id` as Id
 			,`projeto`.`nome` as Nome
 			,`projeto`.`cliente` as Cliente
@@ -53,7 +65,9 @@ class ProjetoReporter extends Reporter
 			,`projeto`.`obs` as Obs
 			,`projeto`.`prioridade` as Prioridade
 			,`projeto`.`Status` as Status
-		from `projeto`";
+		from `projeto`
+		INNER JOIN cliente ON cliente.id=projeto.cliente
+		";
 
 		// the criteria can be used or you can write your own custom logic.
 		// be sure to escape any user input with $criteria->Escape()

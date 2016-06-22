@@ -1,6 +1,6 @@
 <?php
-/** @package    Wt Projetos::Controller */
 
+/** @package    Wt Projetos::Controller */
 /** import supporting libraries */
 require_once("AppBaseController.php");
 require_once("Model/Cliente.php");
@@ -14,253 +14,224 @@ require_once("Model/Cliente.php");
  * @author ClassBuilder
  * @version 1.0
  */
-class ClienteController extends AppBaseController
-{
+class ClienteController extends AppBaseController {
 
-	/**
-	 * Override here for any controller-specific functionality
-	 *
-	 * @inheritdocs
-	 */
-	protected function Init()
-	{
-		parent::Init();
-		
-		/**
-		 * Informe o tipo de permissao
-		 */
-		$this->RequirePermission(User::$PERMISSION_READ, 
-			'Secure.LoginForm', 
-			'Login requerido para acessar esta pagina',
-			'Permissao de leitura e obrigatoria');
-	}
+    /**
+     * Override here for any controller-specific functionality
+     *
+     * @inheritdocs
+     */
+    protected function Init() {
+        parent::Init();
+    }
 
-	/**
-	 * Displays a list view of Cliente objects
-	 */
-	public function ListView()
-	{
-		$this->Render();
-	}
+    /**
+     * Displays a list view of Cliente objects
+     */
+    public function ListView() {
+        $this->Render();
+    }
 
-	/**
-	 * API Method queries for Cliente records and render as JSON
-	 */
-	public function Query()
-	{
-		try
-		{
-			$criteria = new ClienteCriteria();
-			
-			// TODO: this will limit results based on all properties included in the filter list 
-			$filter = RequestUtil::Get('filter');
-			if ($filter) $criteria->AddFilter(
-				new CriteriaFilter('Id,Nome,Empresa,Email,Fone,Obs,DataCadastro'
-				, '%'.$filter.'%')
-			);
+    /**
+     * API Method queries for Cliente records and render as JSON
+     */
+    public function Query() {
+        try {
+            $criteria = new ClienteCriteria();
 
-			// TODO: this is generic query filtering based only on criteria properties
-			foreach (array_keys($_REQUEST) as $prop)
-			{
-				$prop_normal = ucfirst($prop);
-				$prop_equals = $prop_normal.'_Equals';
+            // TODO: this will limit results based on all properties included in the filter list 
+            $filter = RequestUtil::Get('filter');
+            if ($filter)
+                $criteria->AddFilter(
+                        new CriteriaFilter('Id,Nome,Empresa,Email,Fone,Obs,DataCadastro'
+                        , '%' . $filter . '%')
+                );
 
-				if (property_exists($criteria, $prop_normal))
-				{
-					$criteria->$prop_normal = RequestUtil::Get($prop);
-				}
-				elseif (property_exists($criteria, $prop_equals))
-				{
-					// this is a convenience so that the _Equals suffix is not needed
-					$criteria->$prop_equals = RequestUtil::Get($prop);
-				}
-			}
+            // TODO: this is generic query filtering based only on criteria properties
+            foreach (array_keys($_REQUEST) as $prop) {
+                $prop_normal = ucfirst($prop);
+                $prop_equals = $prop_normal . '_Equals';
 
-			$output = new stdClass();
+                if (property_exists($criteria, $prop_normal)) {
+                    $criteria->$prop_normal = RequestUtil::Get($prop);
+                } elseif (property_exists($criteria, $prop_equals)) {
+                    // this is a convenience so that the _Equals suffix is not needed
+                    $criteria->$prop_equals = RequestUtil::Get($prop);
+                }
+            }
 
-			// if a sort order was specified then specify in the criteria
- 			$output->orderBy = RequestUtil::Get('orderBy');
- 			$output->orderDesc = RequestUtil::Get('orderDesc') != '';
- 			if ($output->orderBy) $criteria->SetOrder($output->orderBy, $output->orderDesc);
+            $output = new stdClass();
 
-			$page = RequestUtil::Get('page');
+            // if a sort order was specified then specify in the criteria
+            $output->orderBy = RequestUtil::Get('orderBy');
+            $output->orderDesc = RequestUtil::Get('orderDesc') != '';
+            if ($output->orderBy)
+                $criteria->SetOrder($output->orderBy, $output->orderDesc);
 
-			if ($page != '')
-			{
-				// if page is specified, use this instead (at the expense of one extra count query)
-				$pagesize = $this->GetDefaultPageSize();
+            $page = RequestUtil::Get('page');
 
-				$clientes = $this->Phreezer->Query('Cliente',$criteria)->GetDataPage($page, $pagesize);
-				$output->rows = $clientes->ToObjectArray(true,$this->SimpleObjectParams());
-				$output->totalResults = $clientes->TotalResults;
-				$output->totalPages = $clientes->TotalPages;
-				$output->pageSize = $clientes->PageSize;
-				$output->currentPage = $clientes->CurrentPage;
-			}
-			else
-			{
-				// return all results
-				$clientes = $this->Phreezer->Query('Cliente',$criteria);
-				$output->rows = $clientes->ToObjectArray(true, $this->SimpleObjectParams());
-				$output->totalResults = count($output->rows);
-				$output->totalPages = 1;
-				$output->pageSize = $output->totalResults;
-				$output->currentPage = 1;
-			}
+            if ($page != '') {
+                // if page is specified, use this instead (at the expense of one extra count query)
+                $pagesize = $this->GetDefaultPageSize();
+
+                $clientes = $this->Phreezer->Query('Cliente', $criteria)->GetDataPage($page, $pagesize);
+                $output->rows = $clientes->ToObjectArray(true, $this->SimpleObjectParams());
+                $output->totalResults = $clientes->TotalResults;
+                $output->totalPages = $clientes->TotalPages;
+                $output->pageSize = $clientes->PageSize;
+                $output->currentPage = $clientes->CurrentPage;
+            } else {
+                // return all results
+                $clientes = $this->Phreezer->Query('Cliente', $criteria);
+                $output->rows = $clientes->ToObjectArray(true, $this->SimpleObjectParams());
+                $output->totalResults = count($output->rows);
+                $output->totalPages = 1;
+                $output->pageSize = $output->totalResults;
+                $output->currentPage = 1;
+            }
 
 
-			$this->RenderJSON($output, $this->JSONPCallback());
-		}
-		catch (Exception $ex)
-		{
-			$this->RenderExceptionJSON($ex);
-		}
-	}
+            $this->RenderJSON($output, $this->JSONPCallback());
+        } catch (Exception $ex) {
+            $this->RenderExceptionJSON($ex);
+        }
+    }
 
-	/**
-	 * API Method retrieves a single Cliente record and render as JSON
-	 */
-	public function Read()
-	{
-		try
-		{
-			$pk = $this->GetRouter()->GetUrlParam('id');
-			$cliente = $this->Phreezer->Get('Cliente',$pk);
-			$this->RenderJSON($cliente, $this->JSONPCallback(), true, $this->SimpleObjectParams());
-		}
-		catch (Exception $ex)
-		{
-			$this->RenderExceptionJSON($ex);
-		}
-	}
+    /**
+     * API Method retrieves a single Cliente record and render as JSON
+     */
+    public function Read() {
+        /**
+         * Informe o tipo de permissao
+         */
+        $this->RequirePermission(User::$PERMISSION_READ, 'Secure.LoginForm', 'Login requerido para acessar está página', 'Permissao de leitura é obrigatória');
+        
+        try {
+            $pk = $this->GetRouter()->GetUrlParam('id');
+            $cliente = $this->Phreezer->Get('Cliente', $pk);
+            $this->RenderJSON($cliente, $this->JSONPCallback(), true, $this->SimpleObjectParams());
+        } catch (Exception $ex) {
+            $this->RenderExceptionJSON($ex);
+        }
+    }
 
-	/**
-	 * API Method inserts a new Cliente record and render response as JSON
-	 */
-	public function Create()
-	{
-		try
-		{
-						
-			$json = json_decode(RequestUtil::GetBody());
+    /**
+     * API Method inserts a new Cliente record and render response as JSON
+     */
+    public function Create() {
+        /**
+         * Informe o tipo de permissao
+         */
+        $this->RequirePermission(User::$PERMISSION_WRITE, 'Secure.LoginForm', 'Login requerido para acessar está página', 'Permissao de escrita é obrigatória');
+        
+        try {
 
-			if (!$json)
-			{
-				throw new Exception('The request body does not contain valid JSON');
-			}
+            $json = json_decode(RequestUtil::GetBody());
 
-			$cliente = new Cliente($this->Phreezer);
+            if (!$json) {
+                throw new Exception('The request body does not contain valid JSON');
+            }
 
-			// TODO: any fields that should not be inserted by the user should be commented out
+            $cliente = new Cliente($this->Phreezer);
 
-			// this is an auto-increment.  uncomment if updating is allowed
-			// $cliente->Id = $this->SafeGetVal($json, 'id');
+            // TODO: any fields that should not be inserted by the user should be commented out
+            // this is an auto-increment.  uncomment if updating is allowed
+            // $cliente->Id = $this->SafeGetVal($json, 'id');
 
-			$cliente->Nome = $this->SafeGetVal($json, 'nome');
-			$cliente->Empresa = $this->SafeGetVal($json, 'empresa');
-			$cliente->Email = $this->SafeGetVal($json, 'email');
-			$cliente->Fone = $this->SafeGetVal($json, 'fone');
-			$cliente->Obs = $this->SafeGetVal($json, 'obs');
-			$cliente->DataCadastro = date('Y-m-d H:i:s',strtotime($this->SafeGetVal($json, 'dataCadastro')));
+            $cliente->Nome = $this->SafeGetVal($json, 'nome');
+            $cliente->Empresa = $this->SafeGetVal($json, 'empresa');
+            $cliente->Email = $this->SafeGetVal($json, 'email');
+            $cliente->Fone = $this->SafeGetVal($json, 'fone');
+            $cliente->Obs = $this->SafeGetVal($json, 'obs');
+            $cliente->DataCadastro = date('Y-m-d H:i:s', strtotime($this->SafeGetVal($json, 'dataCadastro')));
 
-			$cliente->Validate();
-			$errors = $cliente->GetValidationErrors();
+            $cliente->Validate();
+            $errors = $cliente->GetValidationErrors();
 
-			if (count($errors) > 0)
-			{
-				$this->RenderErrorJSON('Por Favor, verifique os erros',$errors);
-			}
-			else
-			{
-				$cliente->Save();
-				$this->RenderJSON($cliente, $this->JSONPCallback(), true, $this->SimpleObjectParams());
-			}
+            if (count($errors) > 0) {
+                $this->RenderErrorJSON('Por Favor, verifique os erros', $errors);
+            } else {
+                $cliente->Save();
+                $this->RenderJSON($cliente, $this->JSONPCallback(), true, $this->SimpleObjectParams());
+            }
+        } catch (Exception $ex) {
+            $this->RenderExceptionJSON($ex);
+        }
+    }
 
-		}
-		catch (Exception $ex)
-		{
-			$this->RenderExceptionJSON($ex);
-		}
-	}
+    /**
+     * API Method updates an existing Cliente record and render response as JSON
+     */
+    public function Update() {
+        /**
+         * Informe o tipo de permissao
+         */
+        $this->RequirePermission(User::$PERMISSION_EDIT, 'Secure.LoginForm', 'Login requerido para acessar está página', 'Permissao de edição é obrigatória');
+        
+        try {
 
-	/**
-	 * API Method updates an existing Cliente record and render response as JSON
-	 */
-	public function Update()
-	{
-		try
-		{
-						
-			$json = json_decode(RequestUtil::GetBody());
+            $json = json_decode(RequestUtil::GetBody());
 
-			if (!$json)
-			{
-				throw new Exception('The request body does not contain valid JSON');
-			}
+            if (!$json) {
+                throw new Exception('The request body does not contain valid JSON');
+            }
 
-			$pk = $this->GetRouter()->GetUrlParam('id');
-			$cliente = $this->Phreezer->Get('Cliente',$pk);
+            $pk = $this->GetRouter()->GetUrlParam('id');
+            $cliente = $this->Phreezer->Get('Cliente', $pk);
 
-			// TODO: any fields that should not be updated by the user should be commented out
+            // TODO: any fields that should not be updated by the user should be commented out
+            // this is a primary key.  uncomment if updating is allowed
+            // $cliente->Id = $this->SafeGetVal($json, 'id', $cliente->Id);
 
-			// this is a primary key.  uncomment if updating is allowed
-			// $cliente->Id = $this->SafeGetVal($json, 'id', $cliente->Id);
+            $cliente->Nome = $this->SafeGetVal($json, 'nome', $cliente->Nome);
+            $cliente->Empresa = $this->SafeGetVal($json, 'empresa', $cliente->Empresa);
+            $cliente->Email = $this->SafeGetVal($json, 'email', $cliente->Email);
+            $cliente->Fone = $this->SafeGetVal($json, 'fone', $cliente->Fone);
+            $cliente->Obs = $this->SafeGetVal($json, 'obs', $cliente->Obs);
+            $cliente->DataCadastro = date('Y-m-d H:i:s', strtotime($this->SafeGetVal($json, 'dataCadastro', $cliente->DataCadastro)));
 
-			$cliente->Nome = $this->SafeGetVal($json, 'nome', $cliente->Nome);
-			$cliente->Empresa = $this->SafeGetVal($json, 'empresa', $cliente->Empresa);
-			$cliente->Email = $this->SafeGetVal($json, 'email', $cliente->Email);
-			$cliente->Fone = $this->SafeGetVal($json, 'fone', $cliente->Fone);
-			$cliente->Obs = $this->SafeGetVal($json, 'obs', $cliente->Obs);
-			$cliente->DataCadastro = date('Y-m-d H:i:s',strtotime($this->SafeGetVal($json, 'dataCadastro', $cliente->DataCadastro)));
+            $cliente->Validate();
+            $errors = $cliente->GetValidationErrors();
 
-			$cliente->Validate();
-			$errors = $cliente->GetValidationErrors();
-
-			if (count($errors) > 0)
-			{
-				$this->RenderErrorJSON('Por Favor, verifique os erros',$errors);
-			}
-			else
-			{
-				$cliente->Save();
-				$this->RenderJSON($cliente, $this->JSONPCallback(), true, $this->SimpleObjectParams());
-			}
+            if (count($errors) > 0) {
+                $this->RenderErrorJSON('Por Favor, verifique os erros', $errors);
+            } else {
+                $cliente->Save();
+                $this->RenderJSON($cliente, $this->JSONPCallback(), true, $this->SimpleObjectParams());
+            }
+        } catch (Exception $ex) {
 
 
-		}
-		catch (Exception $ex)
-		{
+            $this->RenderExceptionJSON($ex);
+        }
+    }
 
+    /**
+     * API Method deletes an existing Cliente record and render response as JSON
+     */
+    public function Delete() {
+        /**
+         * Informe o tipo de permissao
+         */
+        $this->RequirePermission(User::$PERMISSION_ADMIN, 'Secure.LoginForm', 'Login requerido para acessar está página', 'Permissao de admin é obrigatória');
+        
+        try {
 
-			$this->RenderExceptionJSON($ex);
-		}
-	}
+            // TODO: if a soft delete is prefered, change this to update the deleted flag instead of hard-deleting
 
-	/**
-	 * API Method deletes an existing Cliente record and render response as JSON
-	 */
-	public function Delete()
-	{
-		try
-		{
-						
-			// TODO: if a soft delete is prefered, change this to update the deleted flag instead of hard-deleting
+            $pk = $this->GetRouter()->GetUrlParam('id');
+            $cliente = $this->Phreezer->Get('Cliente', $pk);
 
-			$pk = $this->GetRouter()->GetUrlParam('id');
-			$cliente = $this->Phreezer->Get('Cliente',$pk);
+            $cliente->Delete();
 
-			$cliente->Delete();
+            $output = new stdClass();
 
-			$output = new stdClass();
+            $this->RenderJSON($output, $this->JSONPCallback());
+        } catch (Exception $ex) {
+            $this->RenderExceptionJSON($ex);
+        }
+    }
 
-			$this->RenderJSON($output, $this->JSONPCallback());
-
-		}
-		catch (Exception $ex)
-		{
-			$this->RenderExceptionJSON($ex);
-		}
-	}
 }
 
 ?>
